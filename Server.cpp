@@ -22,25 +22,91 @@ bool serverOn = true;
 string name;
 string number;
 
-void insert(string name, string number){
+bool insert(string name, string number){
+	//variables 
+	string dataRow;
+	string insert;
+
 	//Pull the text file for editing
-	ofstream databaseOut("database.txt");
+	ifstream databaseIn("database.txt");
 
 	//test to see if file opens 
-	if(databaseOut.is_open()){
+	if(databaseIn.is_open()){
 		//loop through the file until you get an empty line
-		while(getline(databaseOut,line)){
-			
+		while(getline(databaseIn,dataRow)){
+			//add the dataRow to insert for later
+			insert += dataRow + "\n";
+		}
+
+		//add the new values to the insert values 
+		insert += name + "," + number + "\n";
+		
+		//create another file and insert
+		ofstream databaseOut("database.txt");
+		databaseOut << insert;
+
+	}
+	else{
+		return false;
+	}
+
+	databaseIn.close();
+	return true;
+
+}
+
+string* search(string typeToSearch, string* searchArray){
+	//variables 
+	string search;
+	string nHolder;
+	string numHolder;
+
+	//open the file for reading 
+	ifstream databaseIn("database.txt");
+
+	//check if file can open
+	if(databaseIn.is_open()){
+		//check which type is being search
+		if((typeToSearch.compare("name") == 0) || (typeToSearch.compare("number") == 0)){
+			//get each line of the file for testing 
+			while(getline(databaseIn, search)){
+				//create the string to search
+				int pos = search.find(",");
+				nHolder = search.substr(0, 5);
+				numHolder = search.erase(0, pos + 1);
+
+				//check if holder is equal to the required string 
+				if(nHolder.compare(searchArray[0]) == 0 || numHolder.compare(searchArray[0]) == 0){
+					//create the string array 
+					string s[] = {nHolder,numHolder};
+					return s;
+				}
+
+			}
+
+		}
+		else{
+			//get each line of the file for testing 
+			while(getline(databaseIn, search)){
+				//create the string to search
+				int pos = search.find(",");
+				nHolder = search.substr(0, pos);
+				numHolder = search.erase(0, pos + 1);
+
+				//check if holder is equal to the required string 
+				if(nHolder.compare(searchArray[0]) == 0 && numHolder.compare(searchArray[1]) == 0){
+					//create the string array 
+					string s[] = {nHolder,numHolder};
+					return s;
+				}
+
+			}
+
 		}
 
 	}
 
-	databaseOut.close();
-
-}
-
-void search(string typeToSearch, string searchArray[]){
-
+	return NULL;
 } 
 
 void update(string numberToUpdate, string typeToUpdate, string updateArray[]){
@@ -53,7 +119,7 @@ void remove(string numberToRemove){
 
 
 void evalCommand(string cmd, int sock){
-	char* msg = "";
+	/*char* msg = "";
 	if(cmd.substr(0,5).compare("hello") == 0){
     	msg = "\u001b[34mHello, I am a Linux Server talking to you over Telnet!\n\u001b[33m";
     	send(sock , msg , strlen(msg) , 0 );
@@ -87,12 +153,16 @@ void evalCommand(string cmd, int sock){
     }else{
     	msg = "\u001b[31mInvalid command!\n\u001b[33m";
     	send(sock , msg , strlen(msg) , 0 );
-    }
+    }*/
 }
 
 int main(int argc, char const *argv[])
 { 
-	while(serverOn){
+	string s[] = {"name2"};
+	if(search("name", s)){
+		cout << "success" << endl;
+	}
+	/*while(serverOn){
 	    //Variable Declarations
 	    int server_fd, new_socket, valread; 
 	    struct sockaddr_in address; 
@@ -194,7 +264,7 @@ int main(int argc, char const *argv[])
 	    }
 	    shutdown(server_fd, SO_REUSEADDR);
 	    close(server_fd);
-	}
+	}*/
     
     return 0; 
 }
