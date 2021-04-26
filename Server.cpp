@@ -8,28 +8,46 @@
 #include <string.h> 
 #include <string>
 #include <iostream>
+#include <sstream>
+#include <fstream>
 #include <regex>
 #define PORT 23
 
 using namespace std;
 
+//Gloabal variables 
 bool notDone = true;
 bool localecho = true;
 bool serverOn = true;
+string name;
+string number;
 
-void insert(){
+void insert(string name, string number){
+	//Pull the text file for editing
+	ofstream databaseOut("database.txt");
+
+	//test to see if file opens 
+	if(databaseOut.is_open()){
+		//loop through the file until you get an empty line
+		while(getline(databaseOut,line)){
+			
+		}
+
+	}
+
+	databaseOut.close();
 
 }
 
-void search(){
+void search(string typeToSearch, string searchArray[]){
 
 } 
 
-void update(){
+void update(string numberToUpdate, string typeToUpdate, string updateArray[]){
 
 }
 
-void remove(){
+void remove(string numberToRemove){
 
 }
 
