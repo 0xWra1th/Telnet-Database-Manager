@@ -72,13 +72,14 @@ string* search(string typeToSearch, string* searchArray){
 			while(getline(databaseIn, search)){
 				//create the string to search
 				int pos = search.find(",");
-				nHolder = search.substr(0, 5);
+				nHolder = search.substr(0, pos);
 				numHolder = search.erase(0, pos + 1);
 
 				//check if holder is equal to the required string 
 				if(nHolder.compare(searchArray[0]) == 0 || numHolder.compare(searchArray[0]) == 0){
 					//create the string array 
 					string s[] = {nHolder,numHolder};
+					databaseIn.close();
 					return s;
 				}
 
@@ -97,6 +98,7 @@ string* search(string typeToSearch, string* searchArray){
 				if(nHolder.compare(searchArray[0]) == 0 && numHolder.compare(searchArray[1]) == 0){
 					//create the string array 
 					string s[] = {nHolder,numHolder};
+					databaseIn.close();
 					return s;
 				}
 
@@ -106,14 +108,192 @@ string* search(string typeToSearch, string* searchArray){
 
 	}
 
+	databaseIn.close();
 	return NULL;
 } 
 
-void update(string numberToUpdate, string typeToUpdate, string updateArray[]){
+void update(string typeToUpdate, string* thingToUpdate, string* searchArray){
+	//variables 
+	string search;
+	string nHolder;
+	string numHolder;
+	string lineHolder;
+	string newTextFile;
+
+	//open the file for reading 
+	ifstream databaseIn("database.txt");
+
+	//check if file can open
+	if(databaseIn.is_open()){
+		//check which type is being search
+		if(typeToUpdate.compare("name") == 0){
+			//get each line of the file for testing 
+			while(getline(databaseIn, search)){
+				//hold the string for later
+				lineHolder = search;
+
+				//create the string to search
+				int pos = search.find(",");
+				nHolder = search.substr(0, pos);
+				numHolder = search.erase(0, pos + 1);
+
+				//check if holder is equal to the required string 
+				if(nHolder.compare(searchArray[0]) == 0){
+					//add the line to the new text file
+					newTextFile += thingToUpdate[0] + "," + numHolder + "\n";
+				}else{
+					newTextFile += lineHolder + "\n";
+				}
+
+			}
+
+		}else if(typeToUpdate.compare("number") == 0){
+			//get each line of the file for testing 
+			while(getline(databaseIn, search)){
+				//hold the string for later
+				lineHolder = search;
+
+				//create the string to search
+				int pos = search.find(",");
+				nHolder = search.substr(0, pos);
+				numHolder = search.erase(0, pos + 1);
+
+				//check if holder is equal to the required string 
+				if(numHolder.compare(searchArray[0]) == 0){
+					//add the line to the new text file
+					newTextFile += nHolder + "," + thingToUpdate[0] + "\n";
+				}else{
+					newTextFile += lineHolder + "\n";
+				}
+
+			}
+
+		}else{
+			//get each line of the file for testing 
+			while(getline(databaseIn, search)){
+				//hold the string for later
+				lineHolder = search;
+
+				//create the string to search
+				int pos = search.find(",");
+				nHolder = search.substr(0, pos);
+				numHolder = search.erase(0, pos + 1);
+
+				//check if holder is equal to the required string 
+				if(nHolder.compare(searchArray[0]) == 0 && numHolder.compare(searchArray[1]) == 0){
+					//create the string array 
+					newTextFile += thingToUpdate[0] + "," + thingToUpdate[1] + "\n";
+				}else{
+					newTextFile += lineHolder + "\n";
+				}
+
+			}
+
+		}
+
+	}
+
+	cout << newTextFile << endl;
+
+	//add back to the database 
+	ofstream databaseOut("database.txt");
+	if(databaseOut.is_open()){
+		databaseOut << newTextFile;
+	}
+
+	//close the database
+	databaseOut.close();
+	databaseIn.close();
 
 }
 
-void remove(string numberToRemove){
+void remove(string typeToSearch, string* searchArray){
+	//variables 
+	string search;
+	string nHolder;
+	string numHolder;
+	string lineHolder;
+	string newTextFile;
+
+	//open the file for reading 
+	ifstream databaseIn("database.txt");
+
+	//check if file can open
+	if(databaseIn.is_open()){
+		//check which type is being search
+		if(typeToSearch.compare("name") == 0){
+			//get each line of the file for testing 
+			while(getline(databaseIn, search)){
+				//hold the string for later
+				lineHolder = search;
+
+				//create the string to search
+				int pos = search.find(",");
+				nHolder = search.substr(0, pos);
+				numHolder = search.erase(0, pos + 1);
+
+				//check if holder is equal to the required string 
+				if(nHolder.compare(searchArray[0]) != 0){
+					//add the line to the new text file
+					newTextFile += lineHolder + "\n";
+
+				} 
+
+			}
+
+		}else if(typeToSearch.compare("number") == 0){
+			//get each line of the file for testing 
+			while(getline(databaseIn, search)){
+				//hold the string for later
+				lineHolder = search;
+
+				//create the string to search
+				int pos = search.find(",");
+				nHolder = search.substr(0, pos);
+				numHolder = search.erase(0, pos + 1);
+
+				//check if holder is equal to the required string 
+				if(numHolder.compare(searchArray[0]) != 0){
+					//add the line to the new text file
+					newTextFile += lineHolder + "\n";
+
+				} 
+
+			}
+
+		}else{
+			//get each line of the file for testing 
+			while(getline(databaseIn, search)){
+				//hold the string for later
+				lineHolder = search;
+
+				//create the string to search
+				int pos = search.find(",");
+				nHolder = search.substr(0, pos);
+				numHolder = search.erase(0, pos + 1);
+
+				//check if holder is equal to the required string 
+				if(nHolder.compare(searchArray[0]) == 0 && numHolder.compare(searchArray[1]) == 0){
+					//do nothing
+				}else{
+					//create the string array 
+					newTextFile += lineHolder + "\n";
+				}
+
+			}
+
+		}
+
+	}
+	//add back to the database 
+	ofstream databaseOut("database.txt");
+	if(databaseOut.is_open()){
+		databaseOut << newTextFile;
+	}
+
+	//close the database
+	databaseOut.close();
+	databaseIn.close();
 
 }
 
@@ -158,10 +338,9 @@ void evalCommand(string cmd, int sock){
 
 int main(int argc, char const *argv[])
 { 
-	string s[] = {"name2"};
-	if(search("name", s)){
-		cout << "success" << endl;
-	}
+	string s[] = {"number1"};
+	string u[] = {"0873423212"};
+	update("number", u, s);
 	/*while(serverOn){
 	    //Variable Declarations
 	    int server_fd, new_socket, valread; 
