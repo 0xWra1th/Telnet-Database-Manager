@@ -23,6 +23,7 @@ string name;
 string number;
 string* searchString = new string[0];
 int sizeOfSearchString = 0;
+int resultCount = 0;
 
 bool insert(string name, string number){
 	//variables 
@@ -61,7 +62,7 @@ void addToString(string toAdd){
 	string* temp = searchString;
 	sizeOfSearchString += 1;
 	searchString = new string[sizeOfSearchString];
-	for(int i = 0; i < sizeOfSearchString; i++){
+	for(int i = 0; i < sizeOfSearchString-1; i++){
 		searchString[i] = temp[i];
 	}
 	searchString[sizeOfSearchString-1] = toAdd;
@@ -93,6 +94,7 @@ string* search(string typeToSearch, string* searchArray){
 					//create the string array 
 					addToString(nHolder);
 					addToString(numHolder);
+					resultCount++;
 					
 				}
 
@@ -112,7 +114,7 @@ string* search(string typeToSearch, string* searchArray){
 					//create the string array 
 					addToString(nHolder);
 					addToString(numHolder);
-					
+					resultCount++;
 				}
 
 			}
@@ -131,13 +133,14 @@ string* search(string typeToSearch, string* searchArray){
 	return NULL;
 } 
 
-void update(string typeToUpdate, string* thingToUpdate, string* searchArray){
+bool update(string typeToUpdate, string* thingToUpdate, string* searchArray){
 	//variables 
 	string search;
 	string nHolder;
 	string numHolder;
 	string lineHolder;
 	string newTextFile;
+	bool success = false;
 
 	//open the file for reading 
 	ifstream databaseIn("database.txt");
@@ -160,6 +163,7 @@ void update(string typeToUpdate, string* thingToUpdate, string* searchArray){
 				if(nHolder.compare(searchArray[0]) == 0){
 					//add the line to the new text file
 					newTextFile += thingToUpdate[0] + "," + numHolder + "\n";
+					success = true;
 				}else{
 					newTextFile += lineHolder + "\n";
 				}
@@ -181,6 +185,7 @@ void update(string typeToUpdate, string* thingToUpdate, string* searchArray){
 				if(numHolder.compare(searchArray[0]) == 0){
 					//add the line to the new text file
 					newTextFile += nHolder + "," + thingToUpdate[0] + "\n";
+					success = true;
 				}else{
 					newTextFile += lineHolder + "\n";
 				}
@@ -202,6 +207,7 @@ void update(string typeToUpdate, string* thingToUpdate, string* searchArray){
 				if(nHolder.compare(searchArray[0]) == 0 && numHolder.compare(searchArray[1]) == 0){
 					//create the string array 
 					newTextFile += thingToUpdate[0] + "," + thingToUpdate[1] + "\n";
+					success = true;
 				}else{
 					newTextFile += lineHolder + "\n";
 				}
@@ -223,16 +229,17 @@ void update(string typeToUpdate, string* thingToUpdate, string* searchArray){
 	//close the database
 	databaseOut.close();
 	databaseIn.close();
-
+	return success;
 }
 
-void remove(string typeToSearch, string* searchArray){
+bool remove(string typeToSearch, string* searchArray){
 	//variables 
 	string search;
 	string nHolder;
 	string numHolder;
 	string lineHolder;
 	string newTextFile;
+	bool success = false;
 
 	//open the file for reading 
 	ifstream databaseIn("database.txt");
@@ -256,7 +263,9 @@ void remove(string typeToSearch, string* searchArray){
 					//add the line to the new text file
 					newTextFile += lineHolder + "\n";
 
-				} 
+				}else{
+					success = true;
+				}
 
 			}
 
@@ -276,7 +285,9 @@ void remove(string typeToSearch, string* searchArray){
 					//add the line to the new text file
 					newTextFile += lineHolder + "\n";
 
-				} 
+				}else{
+					success = true;
+				}
 
 			}
 
@@ -294,6 +305,7 @@ void remove(string typeToSearch, string* searchArray){
 				//check if holder is equal to the required string 
 				if(nHolder.compare(searchArray[0]) == 0 && numHolder.compare(searchArray[1]) == 0){
 					//do nothing
+					success = true;
 				}else{
 					//create the string array 
 					newTextFile += lineHolder + "\n";
@@ -313,7 +325,7 @@ void remove(string typeToSearch, string* searchArray){
 	//close the database
 	databaseOut.close();
 	databaseIn.close();
-
+	return success;
 }
 
 
@@ -339,6 +351,7 @@ void evalCommand(string cmd, int sock){
     	notDone = false;
     }else if(cmd.substr(0,6).compare("search") == 0){
     	//GET INPUT FORMATTED
+    	resultCount = 0;
     	string field = "";
     	string valueStr = "";
     	string values[2] = {"",""};
@@ -372,28 +385,183 @@ void evalCommand(string cmd, int sock){
 	    //SEARCH
 	    string* res = search(field, values);
 
-    	msg = "\u001b[35mResults:\n\u001b[33m";
+		//Display Results
+    	msg = "\u001b[35mResults:\n";
     	send(sock , msg , strlen(msg) , 0 );
     	string results = "";
-    	cout << "PASSED" << endl;
-    	if(res != nullptr){
-    		cout << "hi" << endl;
-    		cout << res[0] << endl;
-    		for(int x=0;x<(sizeof(res)/sizeof(res[0]));x++){
-    			cout << "PASSED" << endl;
-    			results = results+res[x]+"\n";
+    	if(res != NULL){
+    		for(int x=0;x<resultCount*2;x++){
+				if(!res[x].empty() && res[x] != "" && res[x] != "\r" && res[x] != "\n"){
+					string tmp = "    ";
+					for(int y=0;y<2;y++){
+						if(y == 1){
+							tmp = tmp+", "+res[x];
+						}else{
+							tmp = tmp+res[x];
+							x++;
+						}
+					}
+					results = results+tmp+"\n";
+				}else{
+					break;
+				}
     		}
     	}
+		results = results+"\u001b[33m";
+		msg = const_cast<char*>(results.c_str());
+		send(sock , msg , strlen(msg) , 0 );
+
+		searchString = new string[0];
+		sizeOfSearchString = 0;
 
     }else if(cmd.substr(0,6).compare("insert") == 0){
-    	msg = "\u001b[35mNew Record Added!\n\u001b[33m";
-    	send(sock , msg , strlen(msg) , 0 );
+    	//GET INPUT FORMATTED
+    	resultCount = 0;
+    	string valueStr = "";
+    	string values[2] = {"",""};
+    	int words = 0;
+    	string word = "";
+	    for (auto x : cmd){
+	        if (x == ' '){
+	            word = "";
+	        }else{
+	            word = word + x;
+	        }
+	    }
+	    valueStr = word;
+	    word = "";
+	    words = 0;
+	    for (auto x : valueStr){
+	        if (x == ','){
+	            values[words] = word;
+	            word = "";
+	            words++;
+	        }else{
+	            word = word + x;
+	        }
+	    }
+	    values[words] = word;
+
+	    //INSERT
+	    bool res = insert(values[0], values[1]);
+
+		//Display Results
+    	if(res){
+			msg = "\u001b[35mNew Record Added!\n\u001b[33m";
+	    	send(sock , msg , strlen(msg) , 0 );
+    	}else{
+    		msg = "\u001b[35mERROR: Failed to Add Record.\n\u001b[33m";
+	    	send(sock , msg , strlen(msg) , 0 );
+    	}
     }else if(cmd.substr(0,6).compare("delete") == 0){
-    	msg = "\u001b[35mRecord Removed!\n\u001b[33m";
-    	send(sock , msg , strlen(msg) , 0 );
+    	//GET INPUT FORMATTED
+    	resultCount = 0;
+    	string field = "";
+    	string valueStr = "";
+    	string values[2] = {"",""};
+    	int words = 0;
+    	string word = "";
+	    for (auto x : cmd){
+	        if (x == ' '){
+	        	words++;
+	            if(words == 2){
+	            	field = word;
+	            }
+	            word = "";
+	        }else{
+	            word = word + x;
+	        }
+	    }
+	    valueStr = word;
+	    word = "";
+	    words = 0;
+	    for (auto x : valueStr){
+	        if (x == ','){
+	            values[words] = word;
+	            word = "";
+	            words++;
+	        }else{
+	            word = word + x;
+	        }
+	    }
+	    values[words] = word;
+
+	    //INSERT
+	    bool res = remove(field, values);
+
+		//Display Results
+    	if(res){
+			msg = "\u001b[35mRecord Deleted!\n\u001b[33m";
+    		send(sock , msg , strlen(msg) , 0 );
+    	}else{
+    		msg = "\u001b[35mERROR: Failed to Delete Record.\n\u001b[33m";
+	    	send(sock , msg , strlen(msg) , 0 );
+    	}
+    	
     }else if(cmd.substr(0,6).compare("update") == 0){
-    	msg = "\u001b[35mRecord updated!\n\u001b[33m";
-    	send(sock , msg , strlen(msg) , 0 );
+
+    	//GET INPUT FORMATTED
+    	resultCount = 0;
+    	string field = "";
+    	string newValStr = "";
+    	string valueStr = "";
+    	string values[2] = {"",""};
+    	string newVals[2] = {"",""};
+    	int words = 0;
+    	string word = "";
+	    for (auto x : cmd){
+	        if (x == ' '){
+	        	words++;
+	            if(words == 2){
+	            	field = word;
+	            }else if(words == 3){
+	            	valueStr = word; 
+	            }
+	            word = "";
+	        }else{
+	            word = word + x;
+	        }
+	    }
+	    newValStr = word;
+
+	    word = "";
+	    words = 0;
+	    for (auto x : valueStr){
+	        if (x == ','){
+	            values[words] = word;
+	            word = "";
+	            words++;
+	        }else{
+	            word = word + x;
+	        }
+	    }
+	    values[words] = word;
+
+	    word = "";
+	    words = 0;
+	    for (auto x : newValStr){
+	        if (x == ','){
+	            newVals[words] = word;
+	            word = "";
+	            words++;
+	        }else{
+	            word = word + x;
+	        }
+	    }
+	    newVals[words] = word;
+
+	    //SEARCH
+	    bool res = update(field, newVals, values);
+
+		//Display Results
+    	if(res){
+			msg = "\u001b[35mRecord Updated!\n\u001b[33m";
+    		send(sock , msg , strlen(msg) , 0 );
+    	}else{
+    		msg = "\u001b[35mERROR: Failed to Update Record.\n\u001b[33m";
+	    	send(sock , msg , strlen(msg) , 0 );
+    	}
+
     }else{
     	msg = "\u001b[31mInvalid command!\n\u001b[33m";
     	send(sock , msg , strlen(msg) , 0 );
@@ -401,22 +569,15 @@ void evalCommand(string cmd, int sock){
 }
 
 int main(int argc, char const *argv[])
-<<<<<<< Updated upstream
 { 
-	string s[] = {"test"};
-	search("number", s);
-	/*while(serverOn){
-=======
-{
 	while(serverOn){
->>>>>>> Stashed changes
 	    //Variable Declarations
 	    int server_fd, new_socket, valread; 
 	    struct sockaddr_in address; 
 	    int opt = 1; 
 	    int addrlen = sizeof(address); 
 	    char buffer[1024] = {0};
-	    char* msg = "\033[2J\033[H\u001b[32m\u001b[1m-------------------\n| Friendly Phones |\n-------------------\u001b[0m\n\u001b[33m";
+	    char* msg = "\033[2J\033[H\u001b[32m\u001b[1m-------------------\n| Friendly Phones |\n-------------------\nType help for more information!\u001b[0m\n\u001b[33m";
 		
 		//Server Setup
 		server_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -473,7 +634,6 @@ int main(int argc, char const *argv[])
 			    regex_replace(std::ostream_iterator<char>(res), output.begin(), output.end(), accepted, ""); 
 			    output = res.str();
 			    msg = &output[0];
-			    cout << output << ":" << output.length() << endl;
 			    if(output.compare("") != 0 && output.compare(" ") != 0){
 			    	word = word + output;
 				}else if(output.compare("") == 0){
