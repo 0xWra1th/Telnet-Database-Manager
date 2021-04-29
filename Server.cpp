@@ -21,6 +21,8 @@ bool localecho = true;
 bool serverOn = true;
 string name;
 string number;
+string* searchString = new string[0];
+int sizeOfSearchString = 0;
 
 bool insert(string name, string number){
 	//variables 
@@ -55,11 +57,22 @@ bool insert(string name, string number){
 
 }
 
+void addToString(string toAdd){
+	string* temp = searchString;
+	sizeOfSearchString += 1;
+	searchString = new string[sizeOfSearchString];
+	for(int i = 0; i < sizeOfSearchString; i++){
+		searchString[i] = temp[i];
+	}
+	searchString[sizeOfSearchString-1] = toAdd;
+}
+
 string* search(string typeToSearch, string* searchArray){
 	//variables 
 	string search;
 	string nHolder;
 	string numHolder;
+	string* sun = new string[2];
 
 	//open the file for reading 
 	ifstream databaseIn("database.txt");
@@ -78,9 +91,9 @@ string* search(string typeToSearch, string* searchArray){
 				//check if holder is equal to the required string 
 				if(nHolder.compare(searchArray[0]) == 0 || numHolder.compare(searchArray[0]) == 0){
 					//create the string array 
-					string s[] = {nHolder,numHolder};
-					databaseIn.close();
-					return s;
+					addToString(nHolder);
+					addToString(numHolder);
+					
 				}
 
 			}
@@ -97,14 +110,20 @@ string* search(string typeToSearch, string* searchArray){
 				//check if holder is equal to the required string 
 				if(nHolder.compare(searchArray[0]) == 0 && numHolder.compare(searchArray[1]) == 0){
 					//create the string array 
-					string s[] = {nHolder,numHolder};
-					databaseIn.close();
-					return s;
+					addToString(nHolder);
+					addToString(numHolder);
+					
 				}
 
 			}
 
 		}
+
+		databaseIn.close();
+		string* s = searchString;
+		sizeOfSearchString = 0;
+		searchString = new string[sizeOfSearchString];
+		return s;
 
 	}
 
@@ -338,9 +357,8 @@ void evalCommand(string cmd, int sock){
 
 int main(int argc, char const *argv[])
 { 
-	string s[] = {"number1"};
-	string u[] = {"0873423212"};
-	update("number", u, s);
+	string s[] = {"test"};
+	search("number", s);
 	/*while(serverOn){
 	    //Variable Declarations
 	    int server_fd, new_socket, valread; 
