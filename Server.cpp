@@ -212,7 +212,7 @@ void update(string typeToUpdate, string* thingToUpdate, string* searchArray){
 
 	}
 
-	cout << newTextFile << endl;
+	//cout << newTextFile << endl;
 
 	//add back to the database 
 	ofstream databaseOut("database.txt");
@@ -318,27 +318,15 @@ void remove(string typeToSearch, string* searchArray){
 
 
 void evalCommand(string cmd, int sock){
-	/*char* msg = "";
+	char* msg = "";
 	if(cmd.substr(0,5).compare("hello") == 0){
     	msg = "\u001b[34mHello, I am a Linux Server talking to you over Telnet!\n\u001b[33m";
     	send(sock , msg , strlen(msg) , 0 );
     }else if(cmd.substr(0,4).compare("help") == 0){
-    	msg = " \u001b[36mManual:\n\thello - Say Hi :)\n\tclear - Clear the terminal\n\tsearch - Search for a record in the database(e.g. search [field] [value])\n\tinsert - Insert a new record into the database(e.g. insert [name] [number])\n\tupdate - Update a record into the database(e.g. update [field] [value] [new_value])\n\tdelete - Delete a record from the database(e.g. delete [field] [value])\n\texit - Exit the program\n\tshutdown - Shutdown the server and exit the program\n\thelp - Display this message\n\u001b[33m";
+    	msg = " \u001b[36mManual:\n\thello - Say Hi :)\n\tclear - Clear the terminal\n\texit - Exit the program\n\tshutdown - Shutdown the server and exit the program\n\thelp - Display this message\n\tsearch - Search for a record in the database(e.g. search [fields] [values])\n\tinsert - Insert a new record into the database(e.g. insert [name] [number])\n\tupdate - Update a record into the database(e.g. update [fields] [values] [new_values])\n\tdelete - Delete a record from the database(e.g. delete [fields] [values])\n\t[fields] = name,number,both (Choose one option)\n\t[values] = Comma separated list of values, spaces should be represented as an underscore _ (e.g. Tom_Doe,0839413943)\n\u001b[33m";
     	send(sock , msg , strlen(msg) , 0 );
     }else if(cmd.substr(0,5).compare("clear") == 0){
     	msg = "\033[2J\033[H";
-    	send(sock , msg , strlen(msg) , 0 );
-    }else if(cmd.substr(0,6).compare("search") == 0){
-    	msg = "\u001b[35mResults:\n\u001b[33m";
-    	send(sock , msg , strlen(msg) , 0 );
-    }else if(cmd.substr(0,6).compare("insert") == 0){
-    	msg = "\u001b[35mNew Record Added!\n\u001b[33m";
-    	send(sock , msg , strlen(msg) , 0 );
-    }else if(cmd.substr(0,6).compare("delete") == 0){
-    	msg = "\u001b[35mRecord Removed!\n\u001b[33m";
-    	send(sock , msg , strlen(msg) , 0 );
-    }else if(cmd.substr(0,6).compare("update") == 0){
-    	msg = "\u001b[35mRecord updated!\n\u001b[33m";
     	send(sock , msg , strlen(msg) , 0 );
     }else if(cmd.substr(0,8).compare("shutdown") == 0){
     	msg = "\u001b[34mServer closing, good bye!\n\u001b[33m";
@@ -349,17 +337,79 @@ void evalCommand(string cmd, int sock){
     	msg = "\u001b[34mGood Bye!\n\u001b[33m";
     	send(sock , msg , strlen(msg) , 0 );
     	notDone = false;
+    }else if(cmd.substr(0,6).compare("search") == 0){
+    	//GET INPUT FORMATTED
+    	string field = "";
+    	string valueStr = "";
+    	string values[2] = {"",""};
+    	int words = 0;
+    	string word = "";
+	    for (auto x : cmd){
+	        if (x == ' '){
+	        	words++;
+	            if(words == 2){
+	            	field = word;
+	            }
+	            word = "";
+	        }else{
+	            word = word + x;
+	        }
+	    }
+	    valueStr = word;
+	    word = "";
+	    words = 0;
+	    for (auto x : valueStr){
+	        if (x == ','){
+	            values[words] = word;
+	            word = "";
+	            words++;
+	        }else{
+	            word = word + x;
+	        }
+	    }
+	    values[words] = word;
+
+	    //SEARCH
+	    string* res = search(field, values);
+
+    	msg = "\u001b[35mResults:\n\u001b[33m";
+    	send(sock , msg , strlen(msg) , 0 );
+    	string results = "";
+    	cout << "PASSED" << endl;
+    	if(res != nullptr){
+    		cout << "hi" << endl;
+    		cout << res[0] << endl;
+    		for(int x=0;x<(sizeof(res)/sizeof(res[0]));x++){
+    			cout << "PASSED" << endl;
+    			results = results+res[x]+"\n";
+    		}
+    	}
+
+    }else if(cmd.substr(0,6).compare("insert") == 0){
+    	msg = "\u001b[35mNew Record Added!\n\u001b[33m";
+    	send(sock , msg , strlen(msg) , 0 );
+    }else if(cmd.substr(0,6).compare("delete") == 0){
+    	msg = "\u001b[35mRecord Removed!\n\u001b[33m";
+    	send(sock , msg , strlen(msg) , 0 );
+    }else if(cmd.substr(0,6).compare("update") == 0){
+    	msg = "\u001b[35mRecord updated!\n\u001b[33m";
+    	send(sock , msg , strlen(msg) , 0 );
     }else{
     	msg = "\u001b[31mInvalid command!\n\u001b[33m";
     	send(sock , msg , strlen(msg) , 0 );
-    }*/
+    }
 }
 
 int main(int argc, char const *argv[])
+<<<<<<< Updated upstream
 { 
 	string s[] = {"test"};
 	search("number", s);
 	/*while(serverOn){
+=======
+{
+	while(serverOn){
+>>>>>>> Stashed changes
 	    //Variable Declarations
 	    int server_fd, new_socket, valread; 
 	    struct sockaddr_in address; 
@@ -397,7 +447,7 @@ int main(int argc, char const *argv[])
 			        cerr << "Failed to read data from socket.\n";
 			    }
 			    
-			    const regex accepted("[^\(\)a-zA-Z0-9_-]");
+			    const regex accepted("[^\(\)a-zA-Z0-9,_ -]");
 
 			    stringstream res;
 			    regex_replace(std::ostream_iterator<char>(res), output.begin(), output.end(), accepted, ""); 
@@ -417,7 +467,7 @@ int main(int argc, char const *argv[])
 			        cerr << "Failed to read data from socket.\n";
 			    }
 			    
-			    const regex accepted("[^\(\)a-zA-Z0-9_ -]");
+			    const regex accepted("[^\(\)a-zA-Z0-9,_ -]");
 
 			    stringstream res;
 			    regex_replace(std::ostream_iterator<char>(res), output.begin(), output.end(), accepted, ""); 
@@ -438,10 +488,11 @@ int main(int argc, char const *argv[])
 
 					msg = "\n";
 					send(new_socket , msg , strlen(msg) , 0 );
+					//cout << "IN: " << inputString << endl;
 					evalCommand(inputString, new_socket);					
 			    	inputString = "";
 				}else{
-					if(inputString.compare(" ") != 0){
+					if(inputString.compare("") != 0){
 						inputString = inputString+" "+word;
 					}else{
 						inputString = word;
@@ -461,7 +512,7 @@ int main(int argc, char const *argv[])
 	    }
 	    shutdown(server_fd, SO_REUSEADDR);
 	    close(server_fd);
-	}*/
+	}
     
     return 0; 
 }
